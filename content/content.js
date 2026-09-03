@@ -288,9 +288,11 @@ function downloadFile(content, filename, mimeType) {
 // ── Communication ──────────────────────────────────────────────────────
 function notifyPopup(message) {
   try {
-    chrome.runtime.sendMessage(message);
+    chrome.runtime.sendMessage(message, () => {
+      void chrome.runtime.lastError; // Suppress "Receiving end does not exist"
+    });
   } catch {
-    // Popup may not be open
+    // Extension context invalidated (page reloaded, extension updated)
   }
 }
 

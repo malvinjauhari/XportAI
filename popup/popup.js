@@ -59,18 +59,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  async function refreshStatus() {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab) return;
+  async function refreshStatus(retries = 5, delayMs = 400) {
+    const supportedHosts = ['chatgpt.com', 'gemini.google.com', 'claude.ai'];
 
-      const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_STATUS' });
-      if (response) {
-        updateStatus(response);
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab) return;
+
+        // Only try on supported URLs
+        try {
+          const url = new URL(tab.url);
+          if (!supportedHosts.some(h => url.hostname === h || url.hostname.endsWith('.' + h))) {
+            showUnsupported();
+            return;
+          }
+        } catch {
+          showUnsupported();
+          return;
+        }
+
+        const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_STATUS' });
+        if (response) {
+          updateStatus(response);
+          return;
+        }
+      } catch {
+        // Content script not ready yet — wait and retry
+        if (attempt < retries - 1) {
+          await new Promise(r => setTimeout(r, delayMs));
+        }
       }
-    } catch {
-      showUnsupported();
     }
+    // All retries exhausted
+    showUnsupported();
   }
 
   function updateStatus(data) {
@@ -132,14 +154,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Show processing state
       setStatus('extracting', 'Extracting messages...');
 
-      // Send export trigger to content script
-      const response = await chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_EXPORT' });
+      // Send export trigger to content script (with retry)
+      let response = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_EXPORT' });
+          break;
+        } catch {
+          if (attempt < 2) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+      }
 
       if (!response?.success) {
         showError('Failed to trigger export');
       }
     } catch (err) {
-      showError(err.message);
+      showError(err.message || 'Export failed');
     }
   }
 
