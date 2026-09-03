@@ -272,17 +272,39 @@ function downloadFile(content, filename, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
+  // Primary: use chrome.downloads API (bypasses CSP)
+  if (typeof chrome !== 'undefined' && chrome.downloads && chrome.downloads.download) {
+    chrome.downloads.download({ url, filename, saveAs: false }, (downloadId) => {
+      if (chrome.runtime.lastError) {
+        console.warn('[XportAI] chrome.downloads failed, using fallback:', chrome.runtime.lastError.message);
+        fallbackDownload(url, filename);
+      } else {
+        // Revoke after a delay to ensure download starts
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }
+    });
+  } else {
+    fallbackDownload(url, filename);
+  }
+}
 
-  setTimeout(() => {
+function fallbackDownload(url, filename) {
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 1000);
+  } catch (err) {
+    console.error('[XportAI] Download failed:', err);
     URL.revokeObjectURL(url);
-    a.remove();
-  }, 1000);
+    throw new Error('Download blocked by browser. Try right-clicking the floating button and saving.');
+  }
 }
 
 // ── Communication ──────────────────────────────────────────────────────
@@ -320,7 +342,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case 'TRIGGER_EXPORT':
-      handleExportClick();
+      handleExportClick().catch(err => {
+        console.error('[XportAI] Export handler error:', err);
+        notifyPopup({ type: 'ERROR', error: err.message || 'Export failed unexpectedly' });
+      });
       sendResponse({ success: true });
       return true;
 

@@ -104,16 +104,18 @@ export async function collectMessages(adapter, onProgress) {
  */
 async function scrollToTop(container) {
   // For virtualized containers, scroll in steps to trigger loading
-  const maxScroll = container.scrollHeight || container.scrollTop;
   let currentPos = container.scrollTop;
 
   while (currentPos > 0) {
     currentPos -= container.clientHeight || 500;
     container.scrollTop = Math.max(0, currentPos);
+    // Dispatch synthetic scroll event to trigger lazy-loading
+    container.dispatchEvent(new Event('scroll', { bubbles: true }));
     await sleep(150);
   }
 
   container.scrollTop = 0;
+  container.dispatchEvent(new Event('scroll', { bubbles: true }));
   await sleep(RENDER_WAIT_MS);
 }
 
@@ -125,6 +127,11 @@ async function scrollToTop(container) {
 function scrollDown(container) {
   const before = container.scrollTop;
   container.scrollTop += container.clientHeight || 500;
+  
+  // Dispatch synthetic scroll events to trigger SPA lazy-loading
+  container.dispatchEvent(new Event('scroll', { bubbles: true }));
+  container.dispatchEvent(new Event('scrollend', { bubbles: true }));
+  
   return container.scrollTop > before;
 }
 
@@ -139,6 +146,8 @@ async function scrollToBottom(container) {
   while (container.scrollTop !== lastPos && attempts < 50) {
     lastPos = container.scrollTop;
     container.scrollTop = container.scrollHeight;
+    // Dispatch synthetic scroll event to trigger lazy-loading
+    container.dispatchEvent(new Event('scroll', { bubbles: true }));
     await sleep(200);
     attempts++;
   }
