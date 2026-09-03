@@ -1,0 +1,255 @@
+/* XportAI Popup Styles */
+
+/* ── Reset & Base ──────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  min-height: 200px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: #0a0a0a;
+  color: #e5e5e5;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 14px;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #737373;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: #1a1a1a;
+  color: #a3a3a3;
+}
+
+.icon-btn.active {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+/* ── Sections ──────────────────────────────────────────────────────── */
+.section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.section.hidden {
+  display: none;
+}
+
+/* ── Status ────────────────────────────────────────────────────────── */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #525252;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.status-dot.ready { background: #22c55e; }
+.status-dot.streaming { background: #f59e0b; animation: pulse 1.5s ease-in-out infinite; }
+.status-dot.extracting { background: #3b82f6; animation: pulse 1.5s ease-in-out infinite; }
+.status-dot.processing { background: #3b82f6; animation: pulse 1.5s ease-in-out infinite; }
+.status-dot.success { background: #22c55e; }
+.status-dot.error { background: #ef4444; }
+.status-dot.unsupported { background: #525252; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-text {
+  color: #a3a3a3;
+  font-size: 12px;
+}
+
+/* ── Info Rows ─────────────────────────────────────────────────────── */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 4px 0;
+  gap: 12px;
+}
+
+.info-label {
+  color: #525252;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: #d4d4d4;
+  font-size: 12px;
+  text-align: right;
+  word-break: break-word;
+}
+
+.info-title {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Export Buttons ─────────────────────────────────────────────────── */
+.export-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid #262626;
+  background: #141414;
+  color: #d4d4d4;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.export-btn:hover {
+  background: #1a1a1a;
+  border-color: #333333;
+  color: #ffffff;
+}
+
+.export-btn:active {
+  background: #0f0f0f;
+  transform: scale(0.98);
+}
+
+.export-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.export-btn svg {
+  flex-shrink: 0;
+}
+
+#export-section {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Export Status ─────────────────────────────────────────────────── */
+.export-status-text {
+  font-size: 12px;
+  color: #737373;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.export-status-text.success { color: #22c55e; }
+.export-status-text.error { color: #ef4444; }
+.export-status-text.processing { color: #3b82f6; }
+
+/* ── Settings Panel ────────────────────────────────────────────────── */
+.settings-panel {
+  padding: 12px 16px;
+}
+
+.settings-panel.hidden {
+  display: none;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.settings-label {
+  font-size: 12px;
+  color: #a3a3a3;
+}
+
+.settings-select {
+  background: #141414;
+  border: 1px solid #262626;
+  color: #d4d4d4;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-select:focus {
+  border-color: #3b82f6;
+}
+
+.settings-select option {
+  background: #141414;
+  color: #d4d4d4;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────── */
+.footer {
+  padding: 10px 16px;
+  text-align: center;
+  color: #3f3f3f;
+  font-size: 11px;
+}

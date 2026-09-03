@@ -1,0 +1,120 @@
+/* XportAI Content Script Styles */
+
+/* ── Floating Action Button ─────────────────────────────────────────── */
+#xportai-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+}
+
+#xportai-fab-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #111111;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+#xportai-fab-btn:hover {
+  background: #222222;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+#xportai-fab-btn:active {
+  transform: scale(0.95);
+}
+
+#xportai-fab-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Button states */
+#xportai-fab-btn.xportai-ready {
+  background: #111111;
+}
+
+#xportai-fab-btn.xportai-processing {
+  background: #3b82f6;
+  animation: xportai-pulse 1.5s ease-in-out infinite;
+}
+
+#xportai-fab-btn.xportai-success {
+  background: #22c55e;
+}
+
+#xportai-fab-btn.xportai-error {
+  background: #ef4444;
+}
+
+#xportai-fab-btn.xportai-streaming {
+  background: #f59e0b;
+  animation: xportai-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes xportai-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Status label */
+#xportai-fab-status {
+  pointer-events: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #111111;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+#xportai-fab-status.hidden {
+  display: none;
+}
+
+/* ── Tooltip on hover ──────────────────────────────────────────────── */
+#xportai-fab-btn::after {
+  content: 'Export conversation';
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #111111;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#xportai-fab-btn:hover::after {
+  opacity: 1;
+}
+
+/* ── Ensure it's above platform UI ────────────────────────────────── */
+#xportai-fab {
+  isolation: isolate;
+}
