@@ -47,6 +47,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // Handle file download from content script (bypasses page CSP)
+  if (message.type === 'DOWNLOAD_FILE') {
+    const { content, filename, mimeType } = message;
+    try {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
+      chrome.downloads.download({ url, filename, saveAs: false }, (downloadId) => {
+        if (chrome.runtime.lastError) {
+          console.error('[XportAI] Download failed:', chrome.runtime.lastError.message);
+          sendResponse({ error: chrome.runtime.lastError.message });
+          URL.revokeObjectURL(url);
+        } else {
+          console.log('[XportAI] Download started, id:', downloadId);
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+          sendResponse({ success: true, downloadId });
+        }
+      });
+    } catch (err) {
+      console.error('[XportAI] Download error:', err);
+      sendResponse({ error: err.message });
+    }
+    return true; // Keep message port open for async response
+  }
+
   // Update badge when content script reports status
   if (message.type === 'STATUS' && sender.tab) {
     const tabId = sender.tab.id;

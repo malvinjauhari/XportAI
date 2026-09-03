@@ -237,7 +237,7 @@ async function handleExportClick() {
     }
 
     // Download
-    downloadFile(content, filename, format === 'markdown' ? 'text/markdown' : 'text/plain');
+    await downloadFile(content, filename, format === 'markdown' ? 'text/markdown' : 'text/plain');
 
     updateButtonState('success');
     notifyPopup({
@@ -250,9 +250,9 @@ async function handleExportClick() {
       },
     });
   } catch (err) {
-    console.error('[XportAI] Export error:', err);
+    console.error('[XportAI] Export error:', err.message, err.stack);
     updateButtonState('error');
-    notifyPopup({ type: 'ERROR', error: err.message });
+    notifyPopup({ type: 'ERROR', error: err.message || 'Unknown export error' });
   } finally {
     isProcessing = false;
   }
@@ -268,43 +268,32 @@ async function getExportFormat() {
 }
 
 // ── File Download ──────────────────────────────────────────────────────
+// Sends content to background service worker for download (bypasses page CSP)
 function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-
-  // Primary: use chrome.downloads API (bypasses CSP)
-  if (typeof chrome !== 'undefined' && chrome.downloads && chrome.downloads.download) {
-    chrome.downloads.download({ url, filename, saveAs: false }, (downloadId) => {
-      if (chrome.runtime.lastError) {
-        console.warn('[XportAI] chrome.downloads failed, using fallback:', chrome.runtime.lastError.message);
-        fallbackDownload(url, filename);
-      } else {
-        // Revoke after a delay to ensure download starts
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-      }
-    });
-  } else {
-    fallbackDownload(url, filename);
-  }
-}
-
-function fallbackDownload(url, filename) {
-  try {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 1000);
-  } catch (err) {
-    console.error('[XportAI] Download failed:', err);
-    URL.revokeObjectURL(url);
-    throw new Error('Download blocked by browser. Try right-clicking the floating button and saving.');
-  }
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.runtime.sendMessage(
+        { type: 'DOWNLOAD_FILE', content, filename, mimeType },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('[XportAI] Download message failed:', chrome.runtime.lastError.message);
+            reject(new Error('Download failed: ' + chrome.runtime.lastError.message));
+            return;
+          }
+          if (response?.error) {
+            console.error('[XportAI] Download error:', response.error);
+            reject(new Error('Download failed: ' + response.error));
+            return;
+          }
+          console.log('[XportAI] Download started:', response?.downloadId);
+          resolve(response);
+        }
+      );
+    } catch (err) {
+      console.error('[XportAI] Download exception:', err);
+      reject(new Error('Download failed: ' + err.message));
+    }
+  });
 }
 
 // ── Communication ──────────────────────────────────────────────────────
