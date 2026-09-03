@@ -35,7 +35,8 @@
       "js": ["content/content.js"],
       "css": ["content/content.css"],
       "run_at": "document_start",
-      "all_frames": false
+      "all_frames": false,
+      "type": "module"
     }
   ],
   "icons": {
